@@ -1,10 +1,10 @@
-// Core/Evaluator.cs
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using SpreadsheetApp.Models;
 
 namespace SpreadsheetApp.Core
@@ -23,45 +23,66 @@ namespace SpreadsheetApp.Core
 
     public static class SpreadsheetEvaluator
     {
-        public static EvalValue EvaluateExpression(string exprText, SpreadsheetModel model, int curRow, int curCol)
+        // Нормалізація: видаляємо провідний '=', приводимо LETTERS частину cell-ref до uppercase
+        public static string PreprocessExpression(string input)
         {
-            if (string.IsNullOrWhiteSpace(exprText)) return new EvalValue(0.0);
-            var input = new AntlrInputStream(exprText);
-            var lexer = new LabSpreadsheetLexer(input);
-            var tokens = new CommonTokenStream(lexer);
-            var parser = new LabSpreadsheetParser(tokens);
+            if (input == null) return "";
+            var s = input.Trim();
+            if (s.StartsWith("=")) s = s.Substring(1).Trim();
 
-            parser.RemoveErrorListeners();
-            parser.AddErrorListener(new ThrowExceptionErrorListener());
+            // Заміна всіх підрядків типу letters+digits -> LETTERS + digits
+            s = Regex.Replace(s, @"\b([A-Za-z]+)([1-9][0-9]*)\b", m =>
+            {
+                return m.Groups[1].Value.ToUpperInvariant() + m.Groups[2].Value;
+            });
 
-            var tree = parser.compileUnit();
-            var visitor = new Visitor(model);
-            return visitor.Visit(tree);
+            return s;
         }
+
+        public static EvalValue EvaluateExpression(string exprText, SpreadsheetModel model, int curRow, int curCol)
+{
+    if (string.IsNullOrWhiteSpace(exprText)) return new EvalValue(0.0);
+
+    // попередня нормалізація (видалити '=' на початку та привести cell refs до великих літер)
+    var normalized = PreprocessExpression(exprText);
+    var input = new AntlrInputStream(normalized);
+    var lexer = new LabSpreadsheetLexer(input);
+    var tokens = new CommonTokenStream(lexer);
+    var parser = new LabSpreadsheetParser(tokens);
+
+    parser.RemoveErrorListeners();
+    parser.AddErrorListener(new ThrowExceptionErrorListener());
+
+    var tree = parser.compileUnit();
+    var visitor = new Visitor(model);
+    var result = visitor.Visit(tree);
+
+    // Додаткова захисна перевірка: якщо visitor повернув null — кинемо зрозуміле виключення
+    if (result == null)
+    {
+        throw new EvalException("Evaluator returned null — можлива невідповідність між згенерованим парсером і Visitor (необхідно переглянути згенеровані класи).");
     }
 
-    // Error listener — реалізуємо всі варіанти сигнатур, що зустрічаються у різних версіях runtime
+    return result;
+}
+
+    }
+
+    // Error listener — реалізуємо кілька варіантів сигнатур
     public class ThrowExceptionErrorListener : IAntlrErrorListener<IToken>, IAntlrErrorListener<int>
     {
-        // Variant: IAntlrErrorListener<IToken>.SyntaxError(IRecognizer, IToken, int, int, string, RecognitionException)
         public void SyntaxError(IRecognizer recognizer, IToken offendingSymbol, int line, int charPositionInLine, string msg, RecognitionException e)
         {
             throw new EvalException($"Синтаксична помилка: {msg}");
         }
-
-        // Variant: IAntlrErrorListener<IToken>.SyntaxError(TextWriter, IRecognizer, IToken, int, int, string, RecognitionException)
         public void SyntaxError(TextWriter output, IRecognizer recognizer, IToken offendingSymbol, int line, int charPositionInLine, string msg, RecognitionException e)
         {
             throw new EvalException($"Синтаксична помилка: {msg}");
         }
-
-        // Variant: IAntlrErrorListener<int>.SyntaxError(IRecognizer, int, int, int, string, RecognitionException)
         public void SyntaxError(IRecognizer recognizer, int offendingSymbol, int line, int charPositionInLine, string msg, RecognitionException e)
         {
             throw new EvalException($"Синтаксична помилка: {msg}");
         }
-
-        // Variant: IAntlrErrorListener<int>.SyntaxError(TextWriter, IRecognizer, int, int, int, string, RecognitionException)
         public void SyntaxError(TextWriter output, IRecognizer recognizer, int offendingSymbol, int line, int charPositionInLine, string msg, RecognitionException e)
         {
             throw new EvalException($"Синтаксична помилка: {msg}");
@@ -75,7 +96,7 @@ namespace SpreadsheetApp.Core
 
         public Visitor(SpreadsheetModel model)
         {
-            this.model = model;
+            this.model = model ?? throw new ArgumentNullException(nameof(model));
         }
 
         private int ColNameToIndex(string colName)
@@ -90,6 +111,8 @@ namespace SpreadsheetApp.Core
 
         private EvalValue EvalCell(string cellToken)
         {
+            if (string.IsNullOrWhiteSpace(cellToken)) return new EvalValue(0.0);
+
             int i = 0; while (i < cellToken.Length && char.IsLetter(cellToken[i])) i++;
             var colPart = cellToken.Substring(0, i).ToUpperInvariant();
             var rowPart = cellToken.Substring(i);
@@ -108,7 +131,9 @@ namespace SpreadsheetApp.Core
                 res = new EvalValue(0.0);
             else
             {
-                var input = new AntlrInputStream(expr);
+                // Нормалізуємо і рекурсивно парсимо
+                var normalized = SpreadsheetEvaluator.PreprocessExpression(expr);
+                var input = new AntlrInputStream(normalized);
                 var lexer = new LabSpreadsheetLexer(input);
                 var tokens = new CommonTokenStream(lexer);
                 var parser = new LabSpreadsheetParser(tokens);
@@ -116,7 +141,7 @@ namespace SpreadsheetApp.Core
                 parser.AddErrorListener(new ThrowExceptionErrorListener());
                 var tree = parser.compileUnit();
                 var nestedVisitor = new Visitor(model);
-                nestedVisitor.callStack = this.callStack;
+                nestedVisitor.callStack = this.callStack; // share stack
                 res = nestedVisitor.Visit(tree);
             }
 
@@ -188,7 +213,9 @@ namespace SpreadsheetApp.Core
 
         public override EvalValue VisitFuncCallExpr([NotNull] LabSpreadsheetParser.FuncCallExprContext context)
         {
-            var name = context.IDENT().GetText().ToLowerInvariant();
+            var id = context.IDENT();
+            if (id == null) throw new EvalException("Некоректний виклик функції (відсутня назва)");
+            var name = id.GetText().ToLowerInvariant();
             var argsNode = context.argList();
             List<EvalValue> args = new List<EvalValue>();
             if (argsNode != null)
@@ -215,6 +242,10 @@ namespace SpreadsheetApp.Core
             {
                 throw new EvalException($"Невідома функція {name}");
             }
+        }
+        public override EvalValue VisitCompileUnit([NotNull] LabSpreadsheetParser.CompileUnitContext context)
+        {
+            return Visit(context.expr());
         }
     }
 }

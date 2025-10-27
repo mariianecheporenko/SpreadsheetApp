@@ -66,6 +66,7 @@
 /Users/mac/Desktop/SpreadsheetApp/SpreadsheetApp/obj/Debug/net9.0/SpreadsheetApp.AssemblyInfoInputs.cache
 /Users/mac/Desktop/SpreadsheetApp/SpreadsheetApp/obj/Debug/net9.0/SpreadsheetApp.AssemblyInfo.cs
 /Users/mac/Desktop/SpreadsheetApp/SpreadsheetApp/obj/Debug/net9.0/SpreadsheetApp.csproj.CoreCompileInputs.cache
+/Users/mac/Desktop/SpreadsheetApp/SpreadsheetApp/obj/Debug/net9.0/SpreadsheetApp.sourcelink.json
 /Users/mac/Desktop/SpreadsheetApp/SpreadsheetApp/obj/Debug/net9.0/Spreadsh.22C666A0.Up2Date
 /Users/mac/Desktop/SpreadsheetApp/SpreadsheetApp/obj/Debug/net9.0/SpreadsheetApp.dll
 /Users/mac/Desktop/SpreadsheetApp/SpreadsheetApp/obj/Debug/net9.0/refint/SpreadsheetApp.dll

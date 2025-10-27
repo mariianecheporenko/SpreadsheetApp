@@ -112,22 +112,33 @@ namespace SpreadsheetApp
                 {
                     var tb = new TextBox { Width = 120, Tag = (r<<16)|c };
                     string expr = model.GetCell(r,c);
-                    if (showValues)
-                    {
-                        try
-                        {
-                            var val = SpreadsheetEvaluator.EvaluateExpression(expr, model, r, c);
-                            tb.Text = val.ToString();
-                        }
-                        catch (Exception ex)
-                        {
-                            tb.Text = $"#ERR: {ex.Message}";
-                        }
-                    }
-                    else
-                    {
-                        tb.Text = expr;
-                    }
+if (showValues)
+{
+    try
+    {
+        var val = SpreadsheetEvaluator.EvaluateExpression(expr, model, r, c);
+        if (val == null)
+        {
+            tb.Text = "#ERR: evaluator returned null";
+            Console.WriteLine($"[DEBUG] Cell {ColIndexToName(c)}{r+1} evaluator returned null for expr='{expr}'");
+        }
+        else
+        {
+            tb.Text = val.ToString();
+        }
+    }
+    catch (Exception ex)
+    {
+        // покладемо в клітинку стислий опис, а повний стек — в консоль для діагностики
+        tb.Text = $"#ERR: {ex.GetType().Name}: {ex.Message}";
+        Console.WriteLine($"[ERROR] Exception evaluating cell {ColIndexToName(c)}{r+1} expr='{expr}':\n{ex.ToString()}");
+    }
+}
+else
+{
+    tb.Text = expr;
+}
+
                     tb.LostFocus += (s, e) =>
                     {
                         var t = s as TextBox;
