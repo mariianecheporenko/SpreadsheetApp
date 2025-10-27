@@ -1,0 +1,25 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="https://github.com/avaloniaui"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        x:Class="SpreadsheetApp.MainWindow"
+        Title="SpreadsheetApp - Лабораторна 1"
+        Width="900" Height="600">
+  <DockPanel Margin="8">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8">
+      <TextBlock VerticalAlignment="Center" Text="Rows:"/>
+      <TextBox Name="RowsBox" Width="50"/>
+      <TextBlock VerticalAlignment="Center" Text="Cols:"/>
+      <TextBox Name="ColsBox" Width="50"/>
+      <Button Name="ResizeBtn" Content="Resize" />
+      <ToggleButton Name="ShowValuesToggle" Content="Показати значення" />
+      <Button Name="SaveBtn" Content="Save..." />
+      <Button Name="LoadBtn" Content="Load..." />
+    </StackPanel>
+
+    <ScrollViewer>
+      <StackPanel Name="GridPanel" />
+    </ScrollViewer>
+  </DockPanel>
+</Window>
+
