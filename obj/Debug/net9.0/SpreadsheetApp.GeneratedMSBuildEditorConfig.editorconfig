@@ -24,5 +24,8 @@ build_property.EnableCodeStyleSeverity =
 [/Users/mac/Desktop/SpreadsheetApp/SpreadsheetApp/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[/Users/mac/Desktop/SpreadsheetApp/SpreadsheetApp/HelpWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [/Users/mac/Desktop/SpreadsheetApp/SpreadsheetApp/MainWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

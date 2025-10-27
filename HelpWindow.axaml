@@ -1,0 +1,11 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SpreadsheetApp.HelpWindow"
+        Title="Довідка — Табличний редактор"
+        Width="700" Height="520">
+  <Grid Margin="10">
+    <ScrollViewer>
+      <TextBox Name="HelpTextBox" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"/>
+    </ScrollViewer>
+  </Grid>
+</Window>
