@@ -1,4 +1,4 @@
-// Generated from /Users/mac/Desktop/SpreadsheetApp/SpreadsheetApp/Grammar/LabSpreadsheet.g4 by ANTLR 4.13.1
+// Generated from d:/uni/code/vs/github/Lab1oop/SpreadsheetApp/Grammar/LabSpreadsheet.g4 by ANTLR 4.13.1
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;

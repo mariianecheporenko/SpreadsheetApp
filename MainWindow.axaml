@@ -3,7 +3,7 @@
         xmlns:d="https://github.com/avaloniaui"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         x:Class="SpreadsheetApp.MainWindow"
-        Title="Табличний редактор — Лабораторна"
+        Title="Табличний редактор — Лабораторна 1"
         Width="900" Height="600">
   <DockPanel Margin="8">
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8">

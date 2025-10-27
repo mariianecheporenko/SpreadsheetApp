@@ -23,14 +23,12 @@ namespace SpreadsheetApp.Core
 
     public static class SpreadsheetEvaluator
     {
-        // Нормалізація: видаляємо провідний '=', приводимо LETTERS частину cell-ref до uppercase
         public static string PreprocessExpression(string input)
         {
             if (input == null) return "";
             var s = input.Trim();
             if (s.StartsWith("=")) s = s.Substring(1).Trim();
 
-            // Заміна всіх підрядків типу letters+digits -> LETTERS + digits
             s = Regex.Replace(s, @"\b([A-Za-z]+)([1-9][0-9]*)\b", m =>
             {
                 return m.Groups[1].Value.ToUpperInvariant() + m.Groups[2].Value;
@@ -43,7 +41,6 @@ namespace SpreadsheetApp.Core
 {
     if (string.IsNullOrWhiteSpace(exprText)) return new EvalValue(0.0);
 
-    // попередня нормалізація (видалити '=' на початку та привести cell refs до великих літер)
     var normalized = PreprocessExpression(exprText);
     var input = new AntlrInputStream(normalized);
     var lexer = new LabSpreadsheetLexer(input);
@@ -57,7 +54,6 @@ namespace SpreadsheetApp.Core
     var visitor = new Visitor(model);
     var result = visitor.Visit(tree);
 
-    // Додаткова захисна перевірка: якщо visitor повернув null — кинемо зрозуміле виключення
     if (result == null)
     {
         throw new EvalException("Evaluator returned null — можлива невідповідність між згенерованим парсером і Visitor (необхідно переглянути згенеровані класи).");
@@ -68,7 +64,6 @@ namespace SpreadsheetApp.Core
 
     }
 
-    // Error listener — реалізуємо кілька варіантів сигнатур
     public class ThrowExceptionErrorListener : IAntlrErrorListener<IToken>, IAntlrErrorListener<int>
     {
         public void SyntaxError(IRecognizer recognizer, IToken offendingSymbol, int line, int charPositionInLine, string msg, RecognitionException e)
@@ -131,7 +126,6 @@ namespace SpreadsheetApp.Core
                 res = new EvalValue(0.0);
             else
             {
-                // Нормалізуємо і рекурсивно парсимо
                 var normalized = SpreadsheetEvaluator.PreprocessExpression(expr);
                 var input = new AntlrInputStream(normalized);
                 var lexer = new LabSpreadsheetLexer(input);

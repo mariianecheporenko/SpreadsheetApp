@@ -22,7 +22,6 @@ namespace SpreadsheetApp
         {
             InitializeComponent();
 #if DEBUG
-            // this.AttachDevTools(); // розкоментуйте, якщо у вашій версії Avalonia є AttachDevTools
 #endif
             _gridPanel = this.FindControl<StackPanel>("GridPanel");
             _rowsBox = this.FindControl<TextBox>("RowsBox");
@@ -184,7 +183,6 @@ namespace SpreadsheetApp
             return res;
         }
 
-        // Обробник кнопки "Довідка"
         private async void HelpBtn_Click(object? sender, RoutedEventArgs e)
         {
             var help = new HelpWindow();

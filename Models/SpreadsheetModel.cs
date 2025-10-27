@@ -7,10 +7,8 @@ namespace SpreadsheetApp.Models
 {
     public class SpreadsheetModel
     {
-        // зберігаємо вирази (як їх ввів користувач)
         public int Rows { get; set; }
         public int Cols { get; set; }
-        // row-major: index = r * Cols + c
         public List<string> Cells { get; set; } = new List<string>();
 
         public SpreadsheetModel() { }
